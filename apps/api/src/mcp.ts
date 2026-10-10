@@ -132,7 +132,7 @@ export function shareMcp(
   );
   register(
     "create_share",
-    "本人のHTML／Markdownを期限付きで共有する。未指定の期限は14日。audienceがselectedの場合、recipientsに共有先の会社メールを1〜50件指定する。publicはURLを知っている全員がログインなしで閲覧できる。未指定は大社内のURL共有。",
+    "本人のHTML／Markdownを期限付きで共有する。未指定の期限は14日。audienceがselectedの場合、recipientsに共有先の所属組織のメールを1〜50件指定する。publicはURLを知っている全員がログインなしで閲覧できる。未指定は組織内のURL共有。",
     createShareSchema,
     "shares:write",
     (data) => service.create(identity.ownerId, data),
@@ -174,7 +174,7 @@ export function shareMcp(
   );
   register(
     "update_share_sharing",
-    "本人の共有先を変更する。universityは大社内のURL共有、selectedはrecipientsで指定した会社メールだけ、publicはログイン不要のURL公開。解除した相手のアクセスは直ちに停止する。",
+    "本人の共有先を変更する。universityは組織内のURL共有、selectedはrecipientsで指定した所属組織のメールだけ、publicはログイン不要のURL公開。解除した相手のアクセスは直ちに停止する。",
     sharingSchema.extend({ id: z.string().uuid() }),
     "shares:write",
     (data) => service.updateSharing(identity.ownerId, data.id as string, data),

@@ -83,7 +83,8 @@ function buildAuth(env: Env) {
           !allowedEmail(user.email, cfg.allowedEmailDomains)
         )
           return {
-            error: "許可された会社のGoogleアカウントでログインしてください。",
+            error:
+              "許可された所属組織のGoogleアカウントでログインしてください。",
           };
       },
     },

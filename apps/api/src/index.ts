@@ -482,7 +482,7 @@ async function session(
     throw new AppError(
       401,
       "LOGIN_REQUIRED",
-      "会社のGoogleアカウントでログインしてください。",
+      "所属組織のGoogleアカウントでログインしてください。",
     );
   if (
     !current.user.emailVerified ||

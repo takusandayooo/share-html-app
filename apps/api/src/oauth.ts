@@ -106,7 +106,7 @@ export async function authenticateMcp(env: Env, authorization?: string) {
     throw new AppError(
       401,
       "INVALID_TOKEN",
-      "会社アカウントを確認できません。",
+      "所属組織のアカウントを確認できません。",
     );
   const consent =
     typeof payload.client_id === "string"

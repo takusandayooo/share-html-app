@@ -17,7 +17,7 @@
   },
   "vars": {
     "APP_BASE_URL": "http://localhost:3000",
-    "ALLOWED_EMAIL_DOMAINS": "students.university.example,university.example",
+    "ALLOWED_EMAIL_DOMAINS": "company.example",
     "DEFAULT_EXPIRY_DAYS": "14",
     "MAX_EXPIRY_DAYS": "30",
     "MIN_EXPIRY_DAYS": "1",

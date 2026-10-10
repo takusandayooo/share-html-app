@@ -89,7 +89,7 @@ function fixture() {
     CONTENT_ENCRYPTION_KEY: "12".repeat(32),
     GOOGLE_CLIENT_ID: "",
     GOOGLE_CLIENT_SECRET: "",
-    ALLOWED_EMAIL_DOMAINS: "students.university.example",
+    ALLOWED_EMAIL_DOMAINS: "company.example",
     DEFAULT_EXPIRY_DAYS: "14",
     MAX_EXPIRY_DAYS: "30",
     MIN_EXPIRY_DAYS: "1",
@@ -99,8 +99,8 @@ function fixture() {
     SESSION_TTL_SECONDS: "604800",
   };
   for (const [id, email] of [
-    ["alice", "alice@students.university.example"],
-    ["bob", "bob@students.university.example"],
+    ["alice", "alice@company.example"],
+    ["bob", "bob@company.example"],
     ["outsider", "other@example.com"],
   ])
     sqlite
@@ -162,14 +162,11 @@ async function mcpClient(token: string) {
 describe("Access and lifetime", () => {
   test("domain is exact and maximum configuration is enforced", () => {
     expect(
-      allowedEmail(
-        "a@students.university.example",
-        config(f.env).allowedEmailDomains,
-      ),
+      allowedEmail("a@company.example", config(f.env).allowedEmailDomains),
     ).toBe(true);
     expect(
       allowedEmail(
-        "a@students.university.example.example.com",
+        "a@company.example.example.com",
         config(f.env).allowedEmailDomains,
       ),
     ).toBe(false);
@@ -236,7 +233,7 @@ describe("Access and lifetime", () => {
     expect(
       await gate?.({
         user: {
-          email: "alice@students.university.example",
+          email: "alice@company.example",
           emailVerified: true,
         },
         source: {
@@ -509,18 +506,15 @@ describe("Share recipients and public links", () => {
       "alice",
       input({
         audience: "selected",
-        recipients: [
-          "BOB@students.university.example",
-          "bob@students.university.example",
-        ],
+        recipients: ["BOB@company.example", "bob@company.example"],
       }),
     );
-    expect(share.recipients).toEqual(["bob@students.university.example"]);
+    expect(share.recipients).toEqual(["bob@company.example"]);
     const alice = f.cookie("alice"),
       bob = f.cookie("bob");
     f.sqlite
       .query(
-        "INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt) VALUES('carol','carol','carol@students.university.example',1,0,0)",
+        "INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt) VALUES('carol','carol','carol@company.example',1,0,0)",
       )
       .run();
     const carol = f.cookie("carol");
@@ -572,7 +566,7 @@ describe("Share recipients and public links", () => {
     ).toBe(404);
     await service.updateSharing("alice", share.id, {
       audience: "selected",
-      recipients: ["carol@students.university.example"],
+      recipients: ["carol@company.example"],
     });
     expect(
       (
@@ -582,14 +576,7 @@ describe("Share recipients and public links", () => {
       ).status,
     ).toBe(403);
     expect(
-      (
-        await service.list(
-          "bob",
-          undefined,
-          30,
-          "bob@students.university.example",
-        )
-      ).items,
+      (await service.list("bob", undefined, 30, "bob@company.example")).items,
     ).toHaveLength(0);
   });
   test("public URLs are anonymous; switching to private closes all read endpoints", async () => {
@@ -628,10 +615,10 @@ describe("Share recipients and public links", () => {
         audience: "selected",
         recipients: Array.from(
           { length: 51 },
-          (_, i) => `u${i}@students.university.example`,
+          (_, i) => `u${i}@company.example`,
         ),
       },
-      { audience: "public", recipients: ["bob@students.university.example"] },
+      { audience: "public", recipients: ["bob@company.example"] },
     ])
       await expect(service.create("alice", input(values))).rejects.toThrow();
     const data = input({ audience: "public" });
@@ -696,9 +683,7 @@ describe("Owner-only view history", () => {
     expect(history.total_downloads).toBe(1);
     expect(history.signed_in_viewers).toBe(1);
     expect(
-      history.items.find(
-        (item) => item.email === "bob@students.university.example",
-      )?.views,
+      history.items.find((item) => item.email === "bob@company.example")?.views,
     ).toBe(2);
     expect(history.items.find((item) => item.anonymous)?.email).toBeNull();
     expect((await request(`/api/shares/${share.id}/views`)).status).toBe(401);
@@ -727,7 +712,7 @@ describe("Owner-only view history", () => {
       "alice",
       input({
         audience: "selected",
-        recipients: ["alice@students.university.example"],
+        recipients: ["alice@company.example"],
       }),
     );
     expect(
@@ -927,7 +912,7 @@ describe("encrypted content storage", () => {
     expect(
       await service.readContent(share.id, {
         id: "alice",
-        email: "alice@students.university.example",
+        email: "alice@company.example",
       }),
     ).toBe(plaintext);
     expect(await service.list("alice")).toBeDefined();
@@ -964,7 +949,7 @@ describe("encrypted content storage", () => {
     expect(
       await service.readContent(first.id, {
         id: "alice",
-        email: "alice@students.university.example",
+        email: "alice@company.example",
       }),
     ).toBe("古い本文");
     expect(await service.encryptLegacyContents()).toBe(1);
@@ -972,7 +957,7 @@ describe("encrypted content storage", () => {
     expect(
       await service.readContent(second.id, {
         id: "alice",
-        email: "alice@students.university.example",
+        email: "alice@company.example",
       }),
     ).toBe("古い本文");
     expect(
@@ -992,7 +977,7 @@ describe("encrypted content storage", () => {
     await expect(
       service.readContent(share.id, {
         id: "alice",
-        email: "alice@students.university.example",
+        email: "alice@company.example",
       }),
     ).rejects.toThrow();
     await expect(service.encryptLegacyContents()).rejects.toThrow();
@@ -1007,7 +992,7 @@ describe("encrypted content storage", () => {
     const f = fixture();
     const service = new ShareService(f.env);
     const share = await service.create("alice", input());
-    const viewer = { id: "alice", email: "alice@students.university.example" };
+    const viewer = { id: "alice", email: "alice@company.example" };
     await expect(
       new ShareService({
         ...f.env,
@@ -1040,7 +1025,7 @@ describe("encrypted content storage", () => {
     expect(
       await service.readContent(share.id, {
         id: "alice",
-        email: "alice@students.university.example",
+        email: "alice@company.example",
       }),
     ).toBe(content);
     const stored = f.sqlite
@@ -1334,7 +1319,7 @@ describe("OAuth MCP authorization", () => {
       expect(profile.structuredContent).toEqual({
         id: "alice",
         name: "alice",
-        email: "alice@students.university.example",
+        email: "alice@company.example",
       });
       const created = await client.callTool({
         name: "create_share",

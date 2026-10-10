@@ -242,7 +242,7 @@ app.on(["GET", "POST"], "/api/auth/*", (c) => {
   }
   return createAuth(c.env).handler(request);
 });
-// Only explicitly public shares allow anonymous reads. Mutations always require a university session.
+// Only explicitly public shares allow anonymous reads. Mutations always require an authorized company session.
 app.use("/api/shares/*", async (c, next) => {
   if (
     c.req.method === "GET" &&
@@ -482,7 +482,7 @@ async function session(
     throw new AppError(
       401,
       "LOGIN_REQUIRED",
-      "大学のGoogleアカウントでログインしてください。",
+      "会社のGoogleアカウントでログインしてください。",
     );
   if (
     !current.user.emailVerified ||

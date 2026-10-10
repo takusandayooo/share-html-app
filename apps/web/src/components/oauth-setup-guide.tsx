@@ -132,7 +132,7 @@ export function OAuthSetupGuide({ mcpUrl }: { mcpUrl: string }) {
           <h3>Googleでログインして利用を許可</h3>
           <p>
             プラグインの接続を開始するとSharepagesが開きます。
-            対象の大学Googleアカウントでログインし、連携先と要求された操作を確認して
+            対象の会社のGoogleアカウントでログインし、連携先と要求された操作を確認して
             「許可する」を押してください。ログイン済みの場合は許可画面から始まります。
           </p>
         </li>

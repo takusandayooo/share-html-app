@@ -25,7 +25,7 @@ export default function Home() {
             AIから共有する
           </Link>
         </div>
-        <small>投稿には大学Googleアカウントでのログインが必要です。</small>
+        <small>投稿には会社のGoogleアカウントでのログインが必要です。</small>
       </section>
       <section className="home-section">
         <h2>sharepagesでできること</h2>
@@ -41,7 +41,7 @@ export default function Home() {
             <span className="home-feature-icon">◎</span>
             <h3>共有する相手を選べる</h3>
             <p>
-              大学内のURL共有、指定した大学メール、全員にURL公開。用途に合わせて選び、作成後も変更できます。
+              大社内のURL共有、指定した会社メール、全員にURL公開。用途に合わせて選び、作成後も変更できます。
             </p>
           </article>
           <article>
@@ -61,8 +61,8 @@ export default function Home() {
           <li>
             <span>1</span>
             <div>
-              <h3>大学アカウントでログイン</h3>
-              <p>Googleログインで、あなたの大学メールを確認します。</p>
+              <h3>会社アカウントでログイン</h3>
+              <p>Googleログインで、あなたの会社メールを確認します。</p>
             </div>
           </li>
           <li>
@@ -77,7 +77,7 @@ export default function Home() {
             <div>
               <h3>URLをコピーして届ける</h3>
               <p>
-                URLを送るだけ。全員にURL公開したページは、学外の人もログインなしで開けます。
+                URLを送るだけ。全員にURL公開したページは、社外の人もログインなしで開けます。
               </p>
             </div>
           </li>
@@ -87,12 +87,12 @@ export default function Home() {
         <h2>共有先に合わせた、3つの公開範囲</h2>
         <div className="home-sharing">
           <article>
-            <h3>大学内でURL共有</h3>
-            <p>URLを知っている対象大学のGoogleアカウント全員が閲覧できます。</p>
+            <h3>大社内でURL共有</h3>
+            <p>URLを知っている対象会社のGoogleアカウント全員が閲覧できます。</p>
             <small>閲覧にはログインが必要</small>
           </article>
           <article>
-            <h3>指定した大学メールだけ</h3>
+            <h3>指定した会社メールだけ</h3>
             <p>
               投稿者と指定した相手だけが閲覧できます。相手の「共有されたページ」にも表示します。
             </p>
@@ -101,7 +101,7 @@ export default function Home() {
           <article>
             <h3>全員にURL公開</h3>
             <p>
-              URLを知っている全員が閲覧できます。大学の外の人にも共有できます。
+              URLを知っている全員が閲覧できます。会社の外の人にも共有できます。
             </p>
             <small>閲覧はログイン不要</small>
           </article>

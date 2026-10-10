@@ -34,7 +34,7 @@ export default function SharedWithMe() {
         <div>
           <span className="eyebrow">SHARED WITH YOU</span>
           <h1>自分に共有されたページ</h1>
-          <p>あなたの大学メールを共有先に指定した、有効なページです。</p>
+          <p>あなたの会社メールを共有先に指定した、有効なページです。</p>
         </div>
       </div>
       {isPending ? (
@@ -57,7 +57,7 @@ export default function SharedWithMe() {
           {!items.length && !busy && (
             <div className="empty">
               <h3>まだ共有されたページがありません</h3>
-              <p>大学内のURL共有や全員公開のページは、共有URLから開けます。</p>
+              <p>大社内のURL共有や全員公開のページは、共有URLから開けます。</p>
             </div>
           )}
           <div className="share-list">

@@ -2,8 +2,8 @@
 import type { Share } from "@share/contracts";
 export const audienceLabel = (audience: Share["audience"]) =>
   ({
-    university: "大学内でURL共有",
-    selected: "指定した大学メールだけ",
+    university: "大社内でURL共有",
+    selected: "指定した会社メールだけ",
     public: "全員にURL公開",
   })[audience];
 export function recipientEmails(value: string) {
@@ -38,23 +38,23 @@ export function SharingFields({
           value={audience}
           onChange={(e) => onAudience(e.target.value as Share["audience"])}
         >
-          <option value="university">大学内でURL共有</option>
-          <option value="selected">指定した大学メールだけ</option>
+          <option value="university">大社内でURL共有</option>
+          <option value="selected">指定した会社メールだけ</option>
           <option value="public">全員にURL公開</option>
         </select>
       </label>
       {audience === "selected" && (
         <label>
-          共有先の大学メール
+          共有先の会社メール
           <textarea
             value={recipients}
             onChange={(e) => onRecipients(e.target.value)}
-            placeholder="student@university.example"
+            placeholder="employee@company.example"
             rows={3}
             maxLength={13000}
           />
           <small>
-            改行またはカンマ区切りで最大50人。相手は大学Googleアカウントでログインして閲覧します。メール通知は送信されません。
+            改行またはカンマ区切りで最大50人。相手は会社のGoogleアカウントでログインして閲覧します。メール通知は送信されません。
           </small>
         </label>
       )}
@@ -63,7 +63,7 @@ export function SharingFields({
           ? "このURLを知っている全員が、ログインなしで閲覧・ダウンロードできます。URLを受け取った人から再共有される場合もあります。"
           : audience === "selected"
             ? "投稿者と指定した相手だけが閲覧できます。共有先は後から変更できます。"
-            : "このURLを知っている対象大学のアカウント全員が閲覧できます。"}
+            : "このURLを知っている対象会社のアカウント全員が閲覧できます。"}
       </p>
     </fieldset>
   );

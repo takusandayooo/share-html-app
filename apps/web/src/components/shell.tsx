@@ -53,7 +53,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               </button>
             </>
           ) : (
-            <span className="campus-badge">投稿は大学限定</span>
+            <span className="campus-badge">投稿は会社限定</span>
           )}
         </div>
       </header>
@@ -74,9 +74,9 @@ export function LoginPanel({ callbackURL }: { callbackURL?: string }) {
   const [message, setMessage] = useState("");
   return (
     <section className="login-panel">
-      <h2>大学アカウントでログイン</h2>
+      <h2>会社アカウントでログイン</h2>
       <p>
-        投稿と大学限定ページの閲覧には、対象の大学Googleアカウントでログインしてください。全員公開のURLはログインなしで閲覧できます。
+        投稿と会社限定ページの閲覧には、対象の会社のGoogleアカウントでログインしてください。全員公開のURLはログインなしで閲覧できます。
       </p>
       <button
         type="button"
@@ -95,7 +95,7 @@ export function LoginPanel({ callbackURL }: { callbackURL?: string }) {
       </button>
       <small>
         {config?.allowedEmailDomains.map((d) => `@${d}`).join(" / ") ||
-          "大学メール限定"}
+          "会社メール限定"}
       </small>
       {config && !config.authConfigured && (
         <p className="setup-note">

@@ -199,7 +199,7 @@ export default function SharedPage({
                 {share.is_owner && (
                   <>
                     <p>
-                      ログイン済みの大学利用者を記録します。あなた自身のアクセスは除きます。
+                      ログイン済みの会社の利用者を記録します。あなた自身のアクセスは除きます。
                     </p>
                     {historyError && <p role="alert">{historyError}</p>}
                     <div className="viewer-readers">

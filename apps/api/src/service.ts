@@ -238,7 +238,7 @@ export class ShareService {
       throw new AppError(
         400,
         "INVALID_RECIPIENT",
-        "共有先には対象大学のメールを指定してください。",
+        "共有先には対象会社のメールを指定してください。",
       );
     if (parsed.data.audience === "selected" && !recipients.length)
       throw new AppError(
@@ -261,7 +261,7 @@ export class ShareService {
       throw new AppError(
         401,
         "LOGIN_REQUIRED",
-        "大学のGoogleアカウントでログインしてください。",
+        "会社のGoogleアカウントでログインしてください。",
       );
     if (
       row.ownerId !== viewer.id &&

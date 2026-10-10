@@ -30,9 +30,9 @@ http://localhost:3000/api/auth/callback/google
 https://<公開ドメイン>/api/auth/callback/google
 ```
 
-`.env` の `GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定して、`bun run setup:env` を実行します。ログイン後のGoogleプロフィールで確認済みメールとドメインを検証します。初期の許可ドメインは `students.university.example` と `university.example`。登録・再ログイン・API・MCPキー認証でチェックします。
+`.env` の `GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定して、`bun run setup:env` を実行します。ログイン後のGoogleプロフィールで確認済みメールとドメインを検証します。初期の許可ドメインは `company.example` と `company.example`。登録・再ログイン・API・MCPキー認証でチェックします。
 
-大学のGoogle Workspace側で外部OAuthアプリが制限されている場合は、大学管理者による許可が必要です。Googleログインの実際の完了には、有効なOAuth credentialsと大学アカウントが必要です。
+会社のGoogle Workspace側で外部OAuthアプリが制限されている場合は、会社の管理者による許可が必要です。Googleログインの実際の完了には、有効なOAuth credentialsと会社アカウントが必要です。
 
 ## Cloudflareへデプロイ
 

@@ -1,0 +1,2 @@
+ALTER TABLE shares DROP COLUMN object_key;
+CREATE TABLE share_contents (share_id TEXT PRIMARY KEY NOT NULL REFERENCES shares(id) ON DELETE CASCADE, content TEXT NOT NULL);

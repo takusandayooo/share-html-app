@@ -1,0 +1,30 @@
+{
+  "name": "@share/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "wrangler deploy",
+    "build": "wrangler deploy --dry-run --outdir dist"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.7",
+    "@better-auth/oauth-provider": "1.7.7",
+    "@hono/mcp": "0.3.2",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@share/contracts": "workspace:*",
+    "better-auth": "1.7.7",
+    "drizzle-orm": "0.45.3",
+    "hono": "4.13.13",
+    "hono-rate-limiter": "0.5.4",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "wrangler": "4.148.0",
+    "@cloudflare/workers-types": "5.20261008.1",
+    "drizzle-kit": "0.31.11"
+  }
+}

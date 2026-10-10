@@ -1,0 +1,30 @@
+{
+  "name": "@share/web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port ${PORT:-3000}",
+    "typecheck": "tsc --noEmit",
+    "build": "next build",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --config wrangler.production.jsonc"
+  },
+  "dependencies": {
+    "@better-auth/oauth-provider": "1.7.7",
+    "@share/contracts": "workspace:*",
+    "better-auth": "1.7.7",
+    "next": "16.3.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-markdown": "10.1.0",
+    "rehype-sanitize": "6.0.0",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.9",
+    "wrangler": "4.148.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/node": "26.6.4"
+  }
+}

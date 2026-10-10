@@ -1,0 +1,33 @@
+{
+  "name": "share-html-app",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --parallel --filter \"@share/*\" dev",
+    "check": "biome check . && bun run --filter \"@share/*\" typecheck",
+    "test": "bun test apps/api/src tests",
+    "build": "bun run --filter @share/web build",
+    "preview": "bun run --filter @share/web preview",
+    "db:migrate": "bun run --filter @share/api db:migrate",
+    "db:migrate:remote": "bun run --filter @share/api db:migrate:remote",
+    "setup:env": "bun scripts/setup-env.ts",
+    "prepare:deploy": "bun scripts/prepare-deploy.ts",
+    "build:cloudflare": "bun run --filter @share/web build:cloudflare",
+    "deploy:web": "bun scripts/deploy-web.ts",
+    "build:mcp-installer": "bun scripts/build-mcp-installer.ts",
+    "content:encrypt:remote": "bun --env-file=.env.production scripts/encrypt-remote-content.ts --remote",
+    "check:public": "bun scripts/check-public.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "typescript": "7.0.2",
+    "@types/bun": "1.4.2"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "bun": ">=1.3.0"
+  }
+}

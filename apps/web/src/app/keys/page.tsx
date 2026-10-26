@@ -196,7 +196,7 @@ export default function Keys() {
                     {scope === "shares:read"
                       ? "本人の共有・閲覧履歴を取得"
                       : scope === "shares:write"
-                        ? "作成・期限・共有先変更"
+                        ? "作成・本文更新・期限・共有先変更"
                         : "削除"}
                   </label>
                 ))}

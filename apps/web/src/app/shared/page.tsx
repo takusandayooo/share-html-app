@@ -71,7 +71,8 @@ export default function SharedWithMe() {
                     <strong>{item.title}</strong>
                   </Link>
                   <small>
-                    {item.filename} · {datetime(item.expires_at)}まで
+                    {item.filename} · {datetime(item.expires_at)}まで ·
+                    最終更新：{datetime(item.updated_at)}
                   </small>
                 </div>
                 <Link className="button secondary" href={`/p/${item.id}`}>

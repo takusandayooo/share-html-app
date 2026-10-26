@@ -163,7 +163,8 @@ export default function MyShares() {
                       </Link>
                       <small>
                         {item.filename} · {audienceLabel(item.audience)} ·{" "}
-                        {datetime(item.created_at)}作成
+                        {datetime(item.created_at)}作成 · 最終更新：
+                        {datetime(item.updated_at)}
                       </small>
                     </div>
                     <div className="share-expiry">

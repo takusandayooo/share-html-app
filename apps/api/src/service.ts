@@ -1,5 +1,9 @@
 import type { Share, ShareViews } from "@share/contracts";
-import { createShareSchema, sharingSchema } from "@share/contracts";
+import {
+  createShareSchema,
+  sharingSchema,
+  updateShareContentSchema,
+} from "@share/contracts";
 import { and, desc, eq, gt, lt, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { AppError, allowedEmail, config, type Env } from "./config";
@@ -65,6 +69,7 @@ export class ShareService {
       kind: row.kind,
       size: row.size,
       created_at: new Date(row.createdAt).toISOString(),
+      updated_at: new Date(row.updatedAt ?? row.createdAt).toISOString(),
       expires_at: new Date(
         Math.min(row.expiresAt, row.createdAt + this.cfg.maxExpiryDays * DAY),
       ).toISOString(),
@@ -224,6 +229,57 @@ export class ShareService {
     )
       throw new AppError(410, "EXPIRED", "この共有ページは失効しています。");
     return row;
+  }
+  async getContent(ownerId: string, id: string) {
+    await this.find(id, ownerId);
+    const content = await this.readContent(id);
+    const row = await this.find(id, ownerId);
+    return { ...this.view(row), content };
+  }
+  async updateContent(ownerId: string, id: string, input: unknown) {
+    const row = await this.find(id, ownerId);
+    const parsed = updateShareContentSchema.safeParse(input);
+    if (!parsed.success)
+      throw new AppError(400, "INVALID_INPUT", "入力内容が不正です。");
+    const data = parsed.data;
+    const filename = data.filename ?? row.filename;
+    const kind = fileKind(filename);
+    const size = new TextEncoder().encode(data.content).byteLength;
+    if (size > this.cfg.maxFileBytes)
+      throw new AppError(
+        413,
+        "FILE_TOO_LARGE",
+        "ファイル容量が上限を超えています。",
+      );
+    if (data.content.includes("\u0000"))
+      throw new AppError(
+        400,
+        "INVALID_ENCODING",
+        "UTF-8のテキストを指定してください。",
+      );
+    const key = await contentKey(this.env.CONTENT_ENCRYPTION_KEY);
+    const encrypted = await encryptContent(key, id, data.content);
+    const now = Date.now();
+    // D1 batches commit metadata and encrypted content atomically.
+    // Recheck ownership and expiry after encryption completes.
+    const eligible =
+      "id=? AND owner_id=? AND status='active' AND expires_at>? AND created_at+?>?";
+    const guard = [id, ownerId, now, this.cfg.maxExpiryDays * DAY, now];
+    const results = await this.env.DB.batch([
+      this.env.DB.prepare(
+        `UPDATE share_contents SET content=?,encoding=? WHERE share_id IN (SELECT id FROM shares WHERE ${eligible})`,
+      ).bind(encrypted, CONTENT_ENCODING, ...guard),
+      this.env.DB.prepare(
+        `UPDATE shares SET title=?,filename=?,kind=?,size=?,updated_at=? WHERE ${eligible} AND EXISTS (SELECT 1 FROM share_contents WHERE share_id=shares.id) RETURNING id`,
+      ).bind(data.title ?? row.title, filename, kind, size, now, ...guard),
+    ]);
+    if (!results[1].results.length)
+      throw new AppError(
+        409,
+        "CONFLICT",
+        "共有の状態が変わりました。再読み込みしてください。",
+      );
+    return this.view(await this.find(id, ownerId));
   }
   validateSharing(input: unknown) {
     const parsed = sharingSchema.safeParse(input);

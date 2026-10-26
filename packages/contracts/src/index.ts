@@ -18,6 +18,11 @@ export const createShareSchema = z.object({
 export const updateExpirySchema = z.object({
   expires_at: z.iso.datetime({ offset: true }),
 });
+export const updateShareContentSchema = z.object({
+  content: z.string().min(1),
+  filename: z.string().min(1).max(200).optional(),
+  title: z.string().trim().min(1).max(120).optional(),
+});
 export const keyScopes = [
   "shares:read",
   "shares:write",
@@ -38,6 +43,7 @@ export type Share = {
   kind: "html" | "markdown";
   size: number;
   created_at: string;
+  updated_at: string;
   expires_at: string;
   url: string;
   audience: "university" | "selected" | "public";

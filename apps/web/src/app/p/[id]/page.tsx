@@ -240,6 +240,7 @@ export default function SharedPage({
                   {datetime(share.expires_at)}まで ·{" "}
                   {remaining(share.expires_at)}
                 </p>
+                <p>最終更新：{datetime(share.updated_at)}</p>
                 <p>
                   閲覧・ダウンロードを記録します。ログイン中は名前とメール、未ログインは匿名の件数のみが投稿者に表示されます。
                 </p>

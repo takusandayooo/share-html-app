@@ -345,6 +345,15 @@ app.get("/api/shares/:id/download", async (c) => {
   );
   return c.body(content);
 });
+app.patch("/api/shares/:id/content", async (c) =>
+  c.json(
+    await new ShareService(c.env).updateContent(
+      c.get("ownerId"),
+      c.req.param("id"),
+      await c.req.json(),
+    ),
+  ),
+);
 app.get("/api/shares/:id/views", async (c) =>
   c.json(
     await new ShareService(c.env).accessHistory(

@@ -31,8 +31,8 @@ export function oauthRedirectTarget(
 }
 
 export const oauthScopeLabels: Record<string, string> = {
-  "shares:read": "あなたが作成した共有ページの情報・閲覧履歴を取得する",
-  "shares:write": "ページを作成し、期限や共有先を変更する",
+  "shares:read": "あなたが作成した共有ページの本文・情報・閲覧履歴を取得する",
+  "shares:write": "ページを作成し、本文・タイトル・期限・共有先を変更する",
   "shares:delete": "あなたが作成したページを削除する",
   offline_access: "ログイン画面を開き直さず、許可した操作を継続する",
 };

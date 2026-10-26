@@ -1327,6 +1327,30 @@ describe("OAuth MCP authorization", () => {
         arguments: input(),
       });
       expect(created.isError).not.toBe(true);
+      const createdShare = created.structuredContent as {
+        id: string;
+        url: string;
+      };
+      const replaced = await client.callTool({
+        name: "update_share_content",
+        arguments: {
+          id: createdShare.id,
+          content: "# OAuth経由の修正",
+          filename: "oauth.md",
+        },
+      });
+      expect(replaced.isError).not.toBe(true);
+      expect((replaced.structuredContent as { url: string }).url).toBe(
+        createdShare.url,
+      );
+      const body = await client.callTool({
+        name: "get_share_content",
+        arguments: { id: createdShare.id },
+      });
+      expect(body.isError).not.toBe(true);
+      expect((body.structuredContent as { content: string }).content).toBe(
+        "# OAuth経由の修正",
+      );
       const listed = await client.callTool({
         name: "list_shares",
         arguments: {},
@@ -1344,8 +1368,17 @@ describe("OAuth MCP authorization", () => {
   });
   test("scope boundaries and disconnect immediately revoke both token types", async () => {
     const g = await grant("shares:read offline_access");
+    const share = await new ShareService(f.env).create("alice", input());
     const client = await mcpClient(g.access_token);
     try {
+      const update = await client.callTool({
+        name: "update_share_content",
+        arguments: { id: share.id, content: "権限のない修正" },
+      });
+      expect(update.isError).toBe(true);
+      expect(
+        (await new ShareService(f.env).getContent("alice", share.id)).content,
+      ).toBe("<h1>Hello</h1>");
       const result = await client.callTool({
         name: "create_share",
         arguments: input(),

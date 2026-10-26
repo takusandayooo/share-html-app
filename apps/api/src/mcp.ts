@@ -4,6 +4,7 @@ import {
   createShareSchema,
   sharingSchema,
   updateExpirySchema,
+  updateShareContentSchema,
 } from "@share/contracts";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
@@ -159,6 +160,21 @@ export function shareMcp(
     "shares:read",
     async (data) =>
       service.view(await service.find(data.id as string, identity.ownerId)),
+  );
+  register(
+    "get_share_content",
+    "本人の有効な共有のHTML／Markdown本文とメタデータを取得する。既存ページを修正するときは、この本文を取得して編集する。",
+    z.object({ id: z.string().uuid() }),
+    "shares:read",
+    (data) => service.getContent(identity.ownerId, data.id as string),
+  );
+  register(
+    "update_share_content",
+    "本人の有効な共有のHTML／Markdown本文を全文差し替える。同じIDとURLを維持し、更新日時を記録する。contentに修正後の全文を渡す。filenameとtitleは省略すると維持する。filenameの拡張子で形式を変更できる。共有先・期限・閲覧履歴は維持する。",
+    updateShareContentSchema.extend({ id: z.string().uuid() }),
+    "shares:write",
+    (data) => service.updateContent(identity.ownerId, data.id as string, data),
+    true,
   );
   register(
     "update_share_expiry",

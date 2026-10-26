@@ -33,6 +33,7 @@ function fixture() {
     "0005_share_views.sql",
     "0006_content_encryption.sql",
     "0007_oauth.sql",
+    "0008_share_updated_at.sql",
   ])
     sqlite.exec(
       readFileSync(
@@ -408,7 +409,7 @@ describe("Key-only Hono MCP", () => {
     const key = await createKey(f.env, "alice", { name: "sdk test" });
     const client = await mcpClient(key.token);
     try {
-      expect((await client.listTools()).tools).toHaveLength(8);
+      expect((await client.listTools()).tools).toHaveLength(10);
       const result = await client.callTool({
         name: "create_share",
         arguments: input(),
@@ -770,7 +771,7 @@ test("bundled stdio bridge connects a Node client to authenticated Hono MCP", as
   const client = new Client({ name: "stdio-integration", version: "1.0" });
   try {
     await client.connect(transport);
-    expect((await client.listTools()).tools).toHaveLength(8);
+    expect((await client.listTools()).tools).toHaveLength(10);
     const created = await client.callTool({
       name: "create_share",
       arguments: input({ audience: "public" }),
@@ -1326,6 +1327,30 @@ describe("OAuth MCP authorization", () => {
         arguments: input(),
       });
       expect(created.isError).not.toBe(true);
+      const createdShare = created.structuredContent as {
+        id: string;
+        url: string;
+      };
+      const replaced = await client.callTool({
+        name: "update_share_content",
+        arguments: {
+          id: createdShare.id,
+          content: "# OAuth経由の修正",
+          filename: "oauth.md",
+        },
+      });
+      expect(replaced.isError).not.toBe(true);
+      expect((replaced.structuredContent as { url: string }).url).toBe(
+        createdShare.url,
+      );
+      const body = await client.callTool({
+        name: "get_share_content",
+        arguments: { id: createdShare.id },
+      });
+      expect(body.isError).not.toBe(true);
+      expect((body.structuredContent as { content: string }).content).toBe(
+        "# OAuth経由の修正",
+      );
       const listed = await client.callTool({
         name: "list_shares",
         arguments: {},
@@ -1343,8 +1368,17 @@ describe("OAuth MCP authorization", () => {
   });
   test("scope boundaries and disconnect immediately revoke both token types", async () => {
     const g = await grant("shares:read offline_access");
+    const share = await new ShareService(f.env).create("alice", input());
     const client = await mcpClient(g.access_token);
     try {
+      const update = await client.callTool({
+        name: "update_share_content",
+        arguments: { id: share.id, content: "権限のない修正" },
+      });
+      expect(update.isError).toBe(true);
+      expect(
+        (await new ShareService(f.env).getContent("alice", share.id)).content,
+      ).toBe("<h1>Hello</h1>");
       const result = await client.callTool({
         name: "create_share",
         arguments: input(),
@@ -1519,5 +1553,165 @@ describe("OAuth MCP authorization", () => {
       url: string;
     };
     expect(new URL(denied.url).searchParams.get("error")).toBe("access_denied");
+  });
+});
+describe("Content replacement", () => {
+  test("replaces encrypted content at the same URL and preserves sharing, expiry and views", async () => {
+    const service = new ShareService(f.env);
+    const share = await service.create("alice", input({ audience: "public" }));
+    expect(share.updated_at).toBe(share.created_at);
+    await service.recordAccess(share.id, {}, "view");
+    f.sqlite.query("UPDATE shares SET updated_at=created_at-1000").run();
+    const updated = await service.updateContent("alice", share.id, {
+      content: "# 修正版",
+      filename: "report.md",
+      title: "修正版",
+    });
+    expect(updated.id).toBe(share.id);
+    expect(updated.url).toBe(share.url);
+    expect(updated.created_at).toBe(share.created_at);
+    expect(updated.expires_at).toBe(share.expires_at);
+    expect(updated.audience).toBe("public");
+    expect(updated.kind).toBe("markdown");
+    expect(updated.size).toBe(new TextEncoder().encode("# 修正版").byteLength);
+    expect(updated.updated_at).not.toBe(
+      new Date(Date.parse(share.created_at) - 1000).toISOString(),
+    );
+    expect(await service.getContent("alice", share.id)).toEqual({
+      ...updated,
+      content: "# 修正版",
+    });
+    expect((await service.accessHistory("alice", share.id)).total_views).toBe(
+      1,
+    );
+    const stored = f.sqlite
+      .query("SELECT content,encoding FROM share_contents")
+      .get() as { content: string; encoding: string };
+    expect(stored.encoding).toBe(CONTENT_ENCODING);
+    expect(stored.content).not.toContain("修正版");
+    const response = await request(`/api/shares/${share.id}/download`);
+    expect(await response.text()).toBe("# 修正版");
+    const again = await service.updateContent("alice", share.id, {
+      content: "次の本文",
+    });
+    expect(again.filename).toBe(updated.filename);
+    expect(again.title).toBe(updated.title);
+  });
+  test("rejects other owners, invalid content, expired and deleted pages without modifying data", async () => {
+    const service = new ShareService(f.env);
+    const share = await service.create("alice", input());
+    await expect(service.getContent("bob", share.id)).rejects.toThrow();
+    await expect(
+      service.updateContent("bob", share.id, { content: "bad" }),
+    ).rejects.toThrow();
+    for (const data of [
+      { content: "" },
+      { content: "x\u0000" },
+      { content: "あ".repeat(400000) },
+      { content: "ok", filename: "../bad.html" },
+      { content: "ok", filename: "bad.exe" },
+    ])
+      await expect(
+        service.updateContent("alice", share.id, data),
+      ).rejects.toThrow();
+    expect((await service.getContent("alice", share.id)).content).toBe(
+      "<h1>Hello</h1>",
+    );
+    f.sqlite
+      .query("UPDATE shares SET created_at=?,expires_at=?")
+      .run(Date.now() - DAY, Date.now() - 1);
+    await expect(
+      service.updateContent("alice", share.id, { content: "bad" }),
+    ).rejects.toThrow();
+    await expect(service.getContent("alice", share.id)).rejects.toThrow();
+    await service.delete("alice", share.id);
+    await expect(
+      service.updateContent("alice", share.id, { content: "bad" }),
+    ).rejects.toThrow();
+  });
+  test("metadata failure rolls back content, and missing encryption key preserves the original", async () => {
+    const service = new ShareService(f.env);
+    const share = await service.create("alice", input());
+    f.sqlite.exec(
+      "CREATE TRIGGER fail_update BEFORE UPDATE ON shares BEGIN SELECT RAISE(ABORT,'storage unavailable'); END;",
+    );
+    await expect(
+      service.updateContent("alice", share.id, { content: "bad" }),
+    ).rejects.toThrow();
+    expect(await service.getContent("alice", share.id)).toEqual({
+      ...share,
+      content: "<h1>Hello</h1>",
+    });
+    f.sqlite.exec("DROP TRIGGER fail_update");
+    await expect(
+      new ShareService({ ...f.env, CONTENT_ENCRYPTION_KEY: "" }).updateContent(
+        "alice",
+        share.id,
+        { content: "bad" },
+      ),
+    ).rejects.toThrow();
+    expect((await service.getContent("alice", share.id)).content).toBe(
+      "<h1>Hello</h1>",
+    );
+  });
+  test("browser endpoint requires the owner session, and public access cannot update", async () => {
+    const share = await new ShareService(f.env).create(
+      "alice",
+      input({ audience: "public" }),
+    );
+    for (const [cookie, status] of [
+      ["", 401],
+      [f.cookie("bob"), 404],
+      [f.cookie("alice"), 200],
+    ] as const) {
+      const response = await request(`/api/shares/${share.id}/content`, {
+        method: "PATCH",
+        headers: { Cookie: cookie, "Content-Type": "application/json" },
+        body: JSON.stringify({ content: "<h1>更新</h1>" }),
+      });
+      expect(response.status).toBe(status);
+    }
+    expect(
+      await (await request(`/api/shares/${share.id}/content`)).text(),
+    ).toBe("<h1>更新</h1>");
+  });
+  test("MCP reads and updates owner content with separate read/write scope checks", async () => {
+    const share = await new ShareService(f.env).create("alice", input());
+    for (const [owner, scopes] of [
+      ["alice", ["shares:read"]],
+      ["alice", ["shares:write"]],
+      ["bob", ["shares:read", "shares:write"]],
+    ] as const) {
+      const key = await createKey(f.env, owner, {
+        name: "content",
+        scopes: [...scopes],
+      });
+      const client = await mcpClient(key.token);
+      try {
+        const read = await client.callTool({
+          name: "get_share_content",
+          arguments: { id: share.id },
+        });
+        const update = await client.callTool({
+          name: "update_share_content",
+          arguments: { id: share.id, content: "<h1>修正</h1>" },
+        });
+        expect(read.isError === true).toBe(
+          owner !== "alice" || !scopes.includes("shares:read" as never),
+        );
+        expect(update.isError === true).toBe(
+          owner !== "alice" || !scopes.includes("shares:write" as never),
+        );
+        if (owner === "alice" && scopes[0] === "shares:read")
+          expect((read.structuredContent as { content: string }).content).toBe(
+            "<h1>Hello</h1>",
+          );
+      } finally {
+        await client.close();
+      }
+    }
+    expect(
+      (await new ShareService(f.env).getContent("alice", share.id)).content,
+    ).toBe("<h1>修正</h1>");
   });
 });

@@ -69,11 +69,13 @@ HTMLはsandbox iframeで、インラインスクリプトを許可します。�
 | --- | --- |
 | `get_profile` | `shares:read` |
 | `create_share` | `shares:write` |
-| `list_shares`、`get_share`、`get_share_views` | `shares:read` |
-| `update_share_expiry`、`update_share_sharing` | `shares:write` |
+| `list_shares`、`get_share`、`get_share_content`、`get_share_views` | `shares:read` |
+| `update_share_content`、`update_share_expiry`、`update_share_sharing` | `shares:write` |
 | `delete_share` | `shares:delete` |
 
 MCPは本人の共有だけを操作します。`get_share` はメタデータだけを返します。ローカルパスをサーバーへ渡す代わりに、クライアントがファイルを読み、`create_share` の `filename` と `content` に渡してください。`idempotency_key` はUUIDで必須です。同じ内容の再送には同じキーを使います。
+
+既存ページの修正には `get_share_content({id})` で本文とメタデータを取得し、`update_share_content({id, content, filename?, title?})` で全文を差し替えます。省略したタイトル・ファイル名は維持します。ブラウザの所有者セッションには `PATCH /api/shares/:id/content` を提供します。ID・URL・共有先・期限・閲覧履歴・作成時の冪等性情報は維持し、本文を暗号化してメタデータとD1 batchで同時更新します。`updated_at` は本文更新日時です。期限・共有先の変更では更新しません。新規ページは作成日時を返し、既存データは `0008_share_updated_at.sql` で作成日時を初期値にします。デプロイ前にmigrationを適用してください。
 
 ```json
 {

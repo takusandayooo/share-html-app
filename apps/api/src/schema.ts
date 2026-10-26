@@ -23,6 +23,7 @@ export const shares = sqliteTable(
     kind: text("kind", { enum: ["html", "markdown"] }).notNull(),
     size: integer("size").notNull(),
     createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at"),
     expiresAt: integer("expires_at").notNull(),
     status: text("status", {
       enum: ["pending", "active", "deleting"],

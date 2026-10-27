@@ -174,6 +174,16 @@ export default function SharedPage({
       <div className="viewer-floating-controls">
         {!controlsHidden && (
           <>
+            {share.is_owner && (
+              <Link
+                className="viewer-icon"
+                href={`/p/${id}/edit`}
+                title="ページを編集・ファイルを差し替え"
+                aria-label="ページを編集・ファイルを差し替え"
+              >
+                ✎
+              </Link>
+            )}
             <details className="viewer-details">
               <summary
                 className="viewer-icon"

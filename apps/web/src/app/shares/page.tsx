@@ -172,6 +172,12 @@ export default function MyShares() {
                       <small>{datetime(item.expires_at)}まで</small>
                     </div>
                     <div className="row-actions">
+                      <Link
+                        className="button secondary"
+                        href={`/p/${item.id}/edit`}
+                      >
+                        編集・差し替え
+                      </Link>
                       <button
                         type="button"
                         className="button secondary"
